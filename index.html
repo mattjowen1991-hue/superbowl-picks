@@ -979,7 +979,7 @@
         // Segment i spans from (i * segmentAngle) to ((i+1) * segmentAngle)
         // Center of segment i is at (i * segmentAngle) + (segmentAngle / 2)
         // But since gradient starts at top (-90deg), we subtract 90 for positioning
-        const segmentCenterDeg = (i * segmentAngle) + (segmentAngle / 2) - 90;
+        const segmentCenterDeg = (i * segmentAngle) - 90 + segmentAngle;
         const angleRad = (segmentCenterDeg * Math.PI) / 180;
         
         const x = Math.cos(angleRad) * radius;
