@@ -927,7 +927,12 @@
           const record = data.record;
           
           if (record && record.picks) {
-            state.picks = record.picks;
+  // Merge loaded picks with initialized picks (don't overwrite completely)
+  CONFIG.DRAFT_ORDER.forEach(playerId => {
+    if (record.picks[playerId]) {
+      state.picks[playerId] = record.picks[playerId];
+    }
+  });
             state.replayData = record.replayData || [];
             state.draftStarted = record.draftStarted || false;
             state.draftComplete = record.draftComplete || false;
