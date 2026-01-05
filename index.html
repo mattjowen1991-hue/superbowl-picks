@@ -573,6 +573,86 @@
       replayData: []
     };
 
+    // ============================================
+    // SOUND SYSTEM
+    // ============================================
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+    
+    function playTickSound() {
+      if (!audioCtx) return;
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.frequency.value = 800 + Math.random() * 400;
+      oscillator.type = 'square';
+      
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gainNode.gain.exponentialDecayTo = 0.01;
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+      
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 0.05);
+    }
+    
+    function playWinSound() {
+      if (!audioCtx) return;
+      
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      
+      notes.forEach((freq, i) => {
+        setTimeout(() => {
+          const oscillator = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          
+          oscillator.frequency.value = freq;
+          oscillator.type = 'sine';
+          
+          gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.3);
+        }, i * 150);
+      });
+    }
+    
+    function playLeverSound() {
+      if (!audioCtx) return;
+      
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2);
+      oscillator.type = 'sawtooth';
+      
+      gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+      
+      oscillator.start(audioCtx.currentTime);
+      oscillator.stop(audioCtx.currentTime + 0.2);
+    }
+
     async function fetchPlayoffTeams() {
       try {
         const response = await fetch('https://site.api.espn.com/apis/v2/sports/football/nfl/standings?season=2025&type=3');
@@ -718,6 +798,10 @@
 
     function spinReel(conf) {
       if (state.isSpinning || state.draftComplete || state.currentPicks[conf]) return;
+      
+      initAudio();
+      playLeverSound();
+      
       state.isSpinning = true;
       
       const reel = document.getElementById(`${conf}Reel`);
@@ -739,6 +823,8 @@
       const spinDuration = 3500;
       const startTime = Date.now();
       
+      let lastTickPos = 0;
+      
       function animateSpin() {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / spinDuration, 1);
@@ -746,6 +832,13 @@
         const currentPos = finalPosition * easeOut;
         const wrappedPos = currentPos % (totalItems * itemHeight * 4);
         reel.style.transform = `translateY(-${wrappedPos}px)`;
+        
+        // Play tick sound every time we pass a team
+        if (Math.floor(currentPos / itemHeight) > lastTickPos) {
+          lastTickPos = Math.floor(currentPos / itemHeight);
+          playTickSound();
+        }
+        
         if (progress < 1) requestAnimationFrame(animateSpin);
         else finishSpin(conf, winner, wrapper, btn);
       }
@@ -755,6 +848,7 @@
     function finishSpin(conf, winner, wrapper, btn) {
       wrapper.classList.remove('spinning');
       wrapper.classList.add('winner');
+      playWinSound();
       setTimeout(() => wrapper.classList.remove('winner'), 1500);
       
       state.currentPicks[conf] = winner.name;
