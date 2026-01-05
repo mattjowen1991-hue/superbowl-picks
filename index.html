@@ -971,19 +971,22 @@
       wheel.querySelectorAll('.wheel-label').forEach(el => el.remove());
       
       // Add team labels
-      const radius = wheel.offsetWidth / 2 * 0.62; // Distance from center (62% of radius)
+      const wheelSize = wheel.offsetWidth;
+      const radius = wheelSize * 0.33; // Distance from center
       
       teams.forEach((team, i) => {
-        const angle = (i * segmentAngle) + (segmentAngle / 2); // Center of segment (degrees from top)
-        const angleRad = ((angle - 90) * Math.PI) / 180; // Convert to radians, offset for CSS
+        const angle = (i * segmentAngle) + (segmentAngle / 2); // Center of segment in degrees
+        const angleFromTop = angle - 90; // Adjust so 0 is at top
+        const angleRad = (angleFromTop * Math.PI) / 180;
         
         const x = Math.cos(angleRad) * radius;
         const y = Math.sin(angleRad) * radius;
         
         const label = document.createElement('div');
         label.className = 'wheel-label';
-        // Position at calculated point, then rotate to face outward
-        label.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${angle}deg)`;
+        label.style.left = `calc(50% + ${x}px)`;
+        label.style.top = `calc(50% + ${y}px)`;
+        label.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
         label.innerHTML = `
           <img src="${team.logo}" alt="${team.short}" onerror="this.style.display='none'">
           <span>${team.short}</span>
