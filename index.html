@@ -956,7 +956,7 @@
       const segmentAngle = 360 / teams.length;
       
       // Build conic-gradient for wheel background
-            let gradient = 'conic-gradient(from 0deg, ';
+                  let gradient = `conic-gradient(from ${-segmentAngle/2}deg, `;
       teams.forEach((team, i) => {
         const startAngle = i * segmentAngle;
         const endAngle = (i + 1) * segmentAngle;
