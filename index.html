@@ -956,7 +956,7 @@
       const segmentAngle = 360 / teams.length;
       
       // Build conic-gradient for wheel background
-                  let gradient = `conic-gradient(from ${segmentAngle/2}deg, `;
+                        let gradient = 'conic-gradient(from -90deg, ';
       teams.forEach((team, i) => {
         const startAngle = i * segmentAngle;
         const endAngle = (i + 1) * segmentAngle;
@@ -970,14 +970,17 @@
       // Remove old labels
       wheel.querySelectorAll('.wheel-label').forEach(el => el.remove());
       
-      // Add team labels
+      // Add team labels - positioned to match conic-gradient(from -90deg)
       const wheelSize = wheel.offsetWidth;
       const radius = wheelSize * 0.35;
       
       teams.forEach((team, i) => {
-        // Angle to center of this segment (0deg = right, going clockwise)
-        const segmentCenter = (i * segmentAngle) + (segmentAngle / 2);
-        const angleRad = (segmentCenter * Math.PI) / 180;
+        // Conic gradient starts at -90deg (top) and goes clockwise
+        // Segment i spans from (i * segmentAngle) to ((i+1) * segmentAngle)
+        // Center of segment i is at (i * segmentAngle) + (segmentAngle / 2)
+        // But since gradient starts at top (-90deg), we subtract 90 for positioning
+        const segmentCenterDeg = (i * segmentAngle) + (segmentAngle / 2) - 90;
+        const angleRad = (segmentCenterDeg * Math.PI) / 180;
         
         const x = Math.cos(angleRad) * radius;
         const y = Math.sin(angleRad) * radius;
@@ -986,8 +989,8 @@
         label.className = 'wheel-label';
         label.style.left = `calc(50% + ${x}px)`;
         label.style.top = `calc(50% + ${y}px)`;
-        // Rotate label to face outward (add 90 so text reads outward)
-        label.style.transform = `translate(-50%, -50%) rotate(${segmentCenter + 90}deg)`;
+        // Rotate so logo is on outside, text below it, readable from outside
+        label.style.transform = `translate(-50%, -50%) rotate(${segmentCenterDeg + 90}deg)`;
         label.innerHTML = `
           <img src="${team.logo}" alt="${team.short}" onerror="this.style.display='none'">
           <span>${team.short}</span>
