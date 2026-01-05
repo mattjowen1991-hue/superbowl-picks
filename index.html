@@ -833,6 +833,11 @@ async function fetchPlayoffTeams() {
     
     console.log('✅ Loaded playoff teams from ESPN:', CONFIG.AFC_TEAMS.length, 'AFC,', CONFIG.NFC_TEAMS.length, 'NFC');
     
+    // If ESPN returned no teams, use fallback
+    if (CONFIG.AFC_TEAMS.length === 0 || CONFIG.NFC_TEAMS.length === 0) {
+      throw new Error('No playoff teams found in ESPN data');
+    }
+    
   } catch (err) {
     console.error('Error fetching playoff teams, using fallback:', err);
     
