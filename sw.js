@@ -27,8 +27,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
-  // Always fetch fresh data from JSONBin
-  if (url.hostname.includes('jsonbin.io')) {
+  // Always fetch fresh data from JSONBin and ESPN
+  if (url.hostname.includes('jsonbin.io') || url.hostname.includes('espn.com')) {
     event.respondWith(fetch(event.request));
     return;
   }
