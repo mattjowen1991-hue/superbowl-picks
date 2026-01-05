@@ -989,8 +989,8 @@
         label.className = 'wheel-label';
         label.style.left = `calc(50% + ${x}px)`;
         label.style.top = `calc(50% + ${y}px)`;
-        // Rotate so logo is on outside, text below it, readable from outside
-        label.style.transform = `translate(-50%, -50%) rotate(${segmentCenterDeg + 90}deg)`;
+        // Center the label without rotation for now
+        label.style.transform = 'translate(-50%, -50%)';
         label.innerHTML = `
           <img src="${team.logo}" alt="${team.short}" onerror="this.style.display='none'">
           <span>${team.short}</span>
