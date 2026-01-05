@@ -458,9 +458,137 @@
     
     .mode-btn:hover { border-color: var(--gold); color: var(--gold); }
     .mode-btn.active { background: var(--gold); border-color: var(--gold); color: #000; }
+    .mute-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid var(--gold);
+      background: rgba(0,0,0,0.8);
+      color: var(--gold);
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 50;
+      transition: all 0.2s;
+    }
+    
+    .mute-btn:hover { background: var(--gold); color: #000; }
+    
+    .pin-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .pin-overlay.show { display: flex; }
+    
+    .pin-modal {
+      background: linear-gradient(135deg, #1a1a2e, #12121a);
+      border: 3px solid var(--gold);
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 0 60px rgba(255,215,0,0.3);
+    }
+    
+    .pin-modal h2 {
+      color: var(--gold);
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+    
+    .pin-modal p {
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    
+    .pin-modal img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 4px solid var(--gold);
+      margin-bottom: 16px;
+    }
+    
+    .pin-input {
+      width: 100%;
+      padding: 16px;
+      font-size: 2rem;
+      text-align: center;
+      letter-spacing: 12px;
+      background: #0a0a12;
+      border: 2px solid #444;
+      border-radius: 12px;
+      color: var(--gold);
+      font-family: 'Oswald', sans-serif;
+      margin-bottom: 16px;
+    }
+    
+    .pin-input:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 20px rgba(255,215,0,0.3);
+    }
+    
+    .pin-input.error {
+      border-color: #ff3366;
+      animation: shake 0.5s;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    
+    .pin-error {
+      color: #ff3366;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      min-height: 20px;
+    }
+    
+    .pin-submit {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+      color: #000;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .pin-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(255,215,0,0.4); }
   </style>
 </head>
 <body>
+  <!-- Mute Button -->
+  <button class="mute-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
+
+  <!-- PIN Overlay -->
+  <div class="pin-overlay" id="pinOverlay">
+    <div class="pin-modal">
+      <img src="" alt="" id="pinPlayerAvatar">
+      <h2 id="pinPlayerName">Enter PIN</h2>
+      <p>Enter your 4-digit PIN to confirm it's you</p>
+      <input type="password" class="pin-input" id="pinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••">
+      <div class="pin-error" id="pinError"></div>
+      <button class="pin-submit" onclick="submitPin()">🔓 Unlock</button>
+    </div>
+  </div>
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
     <p class="loading-text">Loading Draft Machine...</p>
@@ -549,13 +677,13 @@
       JSONBIN_API_KEY: '$2a$10$C7BY0Kl0u74gNn/kXO7xNuayWv493/f1jAxlHUmx3ENADQKDii61C',
       DRAFT_ORDER: ['joe', 'jarv', 'matt', 'mark', 'gaz', 'liam', 'ben'],
       PLAYERS: {
-        joe:  { name: 'Joe',  avatar: 'Assets/joe.png' },
-        jarv: { name: 'Jarv', avatar: 'Assets/jarv.png' },
-        matt: { name: 'Matt', avatar: 'Assets/matt.png' },
-        mark: { name: 'Mark', avatar: 'Assets/mark.png' },
-        gaz:  { name: 'Gaz',  avatar: 'Assets/gaz.png' },
-        liam: { name: 'Liam', avatar: 'Assets/liam.png' },
-        ben:  { name: 'Ben',  avatar: 'Assets/ben.png' }
+        joe:  { name: 'Joe',  avatar: 'Assets/joe.png', pin: '2847' },
+        jarv: { name: 'Jarv', avatar: 'Assets/jarv.png', pin: '8351' },
+        matt: { name: 'Matt', avatar: 'Assets/matt.png', pin: '2922' },
+        mark: { name: 'Mark', avatar: 'Assets/mark.png', pin: '5926' },
+        gaz:  { name: 'Gaz',  avatar: 'Assets/gaz.png', pin: '6194' },
+        liam: { name: 'Liam', avatar: 'Assets/liam.png', pin: '6357' },
+        ben:  { name: 'Ben',  avatar: 'Assets/ben.png', pin: '9563' }
       },
       AFC_TEAMS: [],
       NFC_TEAMS: []
@@ -570,7 +698,10 @@
       currentPicks: { afc: null, nfc: null },
       isSpinning: false,
       draftComplete: false,
-      replayData: []
+      replayData: [],
+      isMuted: false,
+      isUnlocked: false,
+      pendingSpinConf: null
     };
 
     // ============================================
@@ -589,7 +720,7 @@
     }
     
     function playTickSound() {
-      if (!audioCtx) return;
+      if (!audioCtx || state.isMuted) return;
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
       
@@ -609,7 +740,7 @@
     }
     
     function playWinSound() {
-      if (!audioCtx) return;
+      if (!audioCtx || state.isMuted) return;
       
       const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
       
@@ -634,7 +765,7 @@
     }
     
     function playLeverSound() {
-      if (!audioCtx) return;
+      if (!audioCtx || state.isMuted) return;
       
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
@@ -651,6 +782,48 @@
       
       oscillator.start(audioCtx.currentTime);
       oscillator.stop(audioCtx.currentTime + 0.2);
+    }
+
+    function toggleMute() {
+      state.isMuted = !state.isMuted;
+      document.getElementById('muteBtn').textContent = state.isMuted ? '🔇' : '🔊';
+    }
+
+    function showPinOverlay(conf) {
+      state.pendingSpinConf = conf;
+      const playerId = CONFIG.DRAFT_ORDER[state.currentPlayerIndex];
+      const player = CONFIG.PLAYERS[playerId];
+      
+      document.getElementById('pinPlayerAvatar').src = player.avatar;
+      document.getElementById('pinPlayerName').textContent = `${player.name}, enter your PIN`;
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinError').textContent = '';
+      document.getElementById('pinInput').classList.remove('error');
+      document.getElementById('pinOverlay').classList.add('show');
+      
+      setTimeout(() => document.getElementById('pinInput').focus(), 100);
+    }
+    
+    function hidePinOverlay() {
+      document.getElementById('pinOverlay').classList.remove('show');
+      state.pendingSpinConf = null;
+    }
+    
+    function submitPin() {
+      const playerId = CONFIG.DRAFT_ORDER[state.currentPlayerIndex];
+      const player = CONFIG.PLAYERS[playerId];
+      const enteredPin = document.getElementById('pinInput').value;
+      
+      if (enteredPin === player.pin) {
+        state.isUnlocked = true;
+        hidePinOverlay();
+        actuallySpinReel(state.pendingSpinConf);
+      } else {
+        document.getElementById('pinInput').classList.add('error');
+        document.getElementById('pinError').textContent = '❌ Incorrect PIN. Try again!';
+        document.getElementById('pinInput').value = '';
+        setTimeout(() => document.getElementById('pinInput').classList.remove('error'), 500);
+      }
     }
 
     async function fetchPlayoffTeams() {
@@ -799,6 +972,17 @@
     function spinReel(conf) {
       if (state.isSpinning || state.draftComplete || state.currentPicks[conf]) return;
       
+      // Require PIN verification if not yet unlocked for this player
+      if (!state.isUnlocked) {
+        initAudio();
+        showPinOverlay(conf);
+        return;
+      }
+      
+      actuallySpinReel(conf);
+    }
+    
+    function actuallySpinReel(conf) {
       initAudio();
       playLeverSound();
       
@@ -901,6 +1085,7 @@
         return;
       }
       state.currentPicks = { afc: null, nfc: null };
+      state.isUnlocked = false;
       const afcBtn = document.getElementById('afcSpinBtn');
       const nfcBtn = document.getElementById('nfcSpinBtn');
       const nextBtn = document.getElementById('nextPlayerBtn');
@@ -1002,6 +1187,9 @@
     function showLoading(show) { document.getElementById('loadingOverlay').classList.toggle('show', show); }
 
     document.addEventListener('DOMContentLoaded', init);
+    document.getElementById('pinInput').addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') submitPin();
+    });
   </script>
   
   <script>
