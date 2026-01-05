@@ -169,7 +169,7 @@
     .reel-wrapper.spinning { animation: machineShake 0.1s infinite; }
     .reel-wrapper.winner { animation: winnerPulse 0.5s ease-in-out 3; }
     
-    @keyframes machineShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+    @keyframes machineShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(calc(-2px * var(--shake-intensity, 1))); } 75% { transform: translateX(calc(2px * var(--shake-intensity, 1))); } }
     @keyframes winnerPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
     
     .reel-label {
@@ -235,6 +235,29 @@
       margin-top: 12px;
       text-align: center;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .reel-team.taken {
+      opacity: 0.3;
+      filter: grayscale(100%);
+    }
+    
+    .taken-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-15deg);
+      background: rgba(255,0,0,0.8);
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 4px;
+      text-shadow: none;
+    }
+    
+    .reel-team {
+      position: relative;
     }
     
     .spin-buttons {
@@ -1051,12 +1074,20 @@
 
     function renderReel(conf) {
       const reel = document.getElementById(`${conf}Reel`);
-      const teams = conf === 'afc' ? state.availableAFC : state.availableNFC;
-      if (teams.length === 0) { reel.innerHTML = '<div class="reel-team"><span>No teams left</span></div>'; return; }
+      const allTeams = conf === 'afc' ? CONFIG.AFC_TEAMS : CONFIG.NFC_TEAMS;
+      const availableTeams = conf === 'afc' ? state.availableAFC : state.availableNFC;
+      const takenNames = new Set(allTeams.filter(t => !availableTeams.includes(t)).map(t => t.name));
+      
+      if (availableTeams.length === 0) { reel.innerHTML = '<div class="reel-team"><span>No teams left</span></div>'; return; }
       let html = '';
       for (let c = 0; c < 4; c++) {
-        teams.forEach(t => {
-          html += `<div class="reel-team" data-team="${t.name}"><img src="${t.logo}" alt="${t.short}"><span>${t.short}</span></div>`;
+        allTeams.forEach(t => {
+          const isTaken = takenNames.has(t.name);
+          html += `<div class="reel-team ${isTaken ? 'taken' : ''}" data-team="${t.name}">
+            <img src="${t.logo}" alt="${t.short}">
+            <span>${t.short}</span>
+            ${isTaken ? '<div class="taken-overlay">TAKEN</div>' : ''}
+          </div>`;
         });
       }
       reel.innerHTML = html;
@@ -1109,10 +1140,11 @@
       document.getElementById('nfcSpinBtn').disabled = true;
       wrapper.classList.add('spinning');
       
-      const winnerIndex = Math.floor(Math.random() * teams.length);
-      const winner = teams[winnerIndex];
+      const winner = teams[Math.floor(Math.random() * teams.length)];
+      const allTeams = conf === 'afc' ? CONFIG.AFC_TEAMS : CONFIG.NFC_TEAMS;
+      const winnerIndex = allTeams.findIndex(t => t.name === winner.name);
       const itemHeight = 180;
-      const totalItems = teams.length;
+      const totalItems = allTeams.length;
       const spinCycles = 3;
       const finalPosition = (spinCycles * totalItems + winnerIndex) * itemHeight;
       const spinDuration = 3500;
@@ -1127,6 +1159,10 @@
         const currentPos = finalPosition * easeOut;
         const wrappedPos = currentPos % (totalItems * itemHeight * 4);
         reel.style.transform = `translateY(-${wrappedPos}px)`;
+        
+        // Reduce shake intensity as spin slows down
+        const shakeIntensity = 1 - progress;
+        wrapper.style.setProperty('--shake-intensity', shakeIntensity);
         
         // Play tick sound every time we pass a team
         if (Math.floor(currentPos / itemHeight) > lastTickPos) {
