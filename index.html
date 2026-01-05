@@ -611,6 +611,27 @@
     }
     
     .pin-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(255,215,0,0.4); }
+
+    .pin-cancel {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border: 2px solid #444;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .pin-cancel:hover {
+      border-color: #ff3366;
+      color: #ff3366;
+    }
   </style>
 </head>
 <body>
@@ -626,6 +647,7 @@
       <input type="password" class="pin-input" id="pinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••">
       <div class="pin-error" id="pinError"></div>
       <button class="pin-submit" onclick="submitPin()">🔓 Unlock</button>
+      <button class="pin-cancel" onclick="hidePinOverlay()">✕ Cancel</button>
     </div>
   </div>
   <div class="loading-overlay" id="loadingOverlay">
@@ -693,7 +715,7 @@
         <p>All teams have been assigned. Good luck in the playoffs!</p>
         <button class="export-btn" onclick="exportResults()">📋 Copy Results</button>
         <button class="export-btn" onclick="exportToPicksJson()">💾 Export picks.json</button>
-        <button class="reset-btn" onclick="resetDraft()">🔄 Reset Draft</button>
+        <button class="reset-btn" onclick="promptResetPin()">🔄 Reset Draft</button>
       </div>
     </div>
 
@@ -702,7 +724,7 @@
         <h2>📋 Draft Results</h2>
         <p>Here's how the draft played out!</p>
         <button class="export-btn" onclick="exportResults()">📋 Copy Results</button>
-        <button class="reset-btn" onclick="resetDraft()">🔄 Reset Draft</button>
+        <button class="reset-btn" onclick="promptResetPin()">🔄 Reset Draft</button>
       </div>
     </div>
 
@@ -978,6 +1000,15 @@
         });
         console.log('✅ Draft data saved to JSONBin');
       } catch (err) { console.error('Error saving:', err); }
+    }
+
+    function promptResetPin() {
+      const enteredPin = prompt('🔒 Enter admin PIN to reset draft:');
+      if (enteredPin === '2922') {
+        resetDraft();
+      } else if (enteredPin !== null) {
+        alert('❌ Incorrect PIN. Reset cancelled.');
+      }
     }
 
     async function resetDraft() {
