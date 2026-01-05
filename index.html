@@ -696,7 +696,7 @@
           <div class="wheel-pointer"></div>
           <div class="wheel" id="wheel"></div>
           <div class="wheel-center" id="wheelCenter">
-            <img src="Assets/afc.png" alt="Conference" id="conferenceIcon">
+            <img src="Assets/afc-logo.png" alt="Conference" id="conferenceIcon">
           </div>
         </div>
         <button class="spin-btn" id="spinBtn" onclick="spin()">🎰 SPIN!</button>
@@ -738,7 +738,7 @@
           <div class="wheel-pointer"></div>
           <div class="wheel" id="replayWheel"></div>
           <div class="wheel-center">
-            <img src="Assets/afc.png" alt="Conference" id="replayConferenceIcon">
+            <img src="Assets/afc-logo.png" alt="Conference" id="replayConferenceIcon">
           </div>
         </div>
       </div>
@@ -1026,7 +1026,7 @@ async function fetchPlayoffTeams() {
       
       // Update center icon
       const conferenceIcon = document.getElementById('conferenceIcon');
-      conferenceIcon.src = state.currentConference === 'afc' ? 'Assets/afc.png' : 'Assets/nfc.png';
+      conferenceIcon.src = state.currentConference === 'afc' ? 'Assets/afc-logo.png' : 'Assets/nfc-logo.png';
     }
 
     function renderDraftBoard() {
@@ -1342,7 +1342,7 @@ async function fetchPlayoffTeams() {
         const availableTeams = teams.filter(t => !pickedTeams.includes(t.name));
         
         renderReplayWheel(availableTeams, spinData.conference);
-        conferenceIcon.src = spinData.conference === 'afc' ? 'Assets/afc.png' : 'Assets/nfc.png';
+        conferenceIcon.src = spinData.conference === 'afc' ? 'Assets/afc-logo.png' : 'Assets/nfc-logo.png';
         
         // Reset wheel position
         wheel.style.transition = 'none';
