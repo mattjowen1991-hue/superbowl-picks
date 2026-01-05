@@ -8,7 +8,7 @@
   <!-- PWA Support -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1a1a2e">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SB Draft">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -202,69 +202,59 @@
       height: 100%;
       border-radius: 50%;
       position: relative;
-      transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+      transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
       box-shadow: 
         0 0 0 8px var(--gold),
         0 0 0 12px var(--bg-dark),
         0 0 40px rgba(212, 175, 55, 0.3);
-    }
-    
-    .wheel.spinning {
-      transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-    }
-    
-    .wheel-segment {
-      position: absolute;
-      width: 50%;
-      height: 50%;
-      left: 50%;
-      top: 50%;
-      transform-origin: 0% 0%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      clip-path: polygon(0 0, 100% 0, 100% 100%);
       overflow: hidden;
     }
     
-    .segment-content {
+    /* Wheel segments using conic-gradient */
+    .wheel-bg {
       position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+    
+    /* Team labels positioned around the wheel */
+    .wheel-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      transform: rotate(25.7deg) translateY(-30%);
-      text-align: center;
+      transform-origin: center center;
+      pointer-events: none;
     }
     
-    .segment-content img {
-      width: 40px;
-      height: 40px;
+    .wheel-label img {
+      width: 36px;
+      height: 36px;
       object-fit: contain;
-      margin-bottom: 4px;
     }
     
     @media (min-width: 640px) {
-      .segment-content img {
-        width: 50px;
-        height: 50px;
+      .wheel-label img {
+        width: 44px;
+        height: 44px;
       }
     }
     
-    .segment-content span {
+    .wheel-label span {
       font-family: 'Oswald', sans-serif;
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       font-weight: 600;
       color: white;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-      max-width: 60px;
-      line-height: 1.1;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+      margin-top: 2px;
     }
     
     @media (min-width: 640px) {
-      .segment-content span {
-        font-size: 0.75rem;
-        max-width: 70px;
+      .wheel-label span {
+        font-size: 0.7rem;
       }
     }
     
@@ -301,8 +291,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 80px;
-      height: 80px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--bg-card), var(--bg-dark));
       border: 4px solid var(--gold);
@@ -314,8 +304,8 @@
     }
     
     .wheel-center img {
-      width: 50px;
-      height: 50px;
+      width: 45px;
+      height: 45px;
       object-fit: contain;
     }
     
@@ -627,39 +617,6 @@
       margin-top: 16px;
       color: var(--text-muted);
     }
-    
-    /* No Draft Message */
-    .no-draft {
-      text-align: center;
-      padding: 60px 20px;
-    }
-    
-    .no-draft h2 {
-      font-family: 'Oswald', sans-serif;
-      font-size: 1.5rem;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
-    
-    .start-draft-btn {
-      padding: 16px 32px;
-      border: none;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--red), var(--red-dark));
-      color: white;
-      font-family: 'Oswald', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .start-draft-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(196, 30, 58, 0.4);
-    }
   </style>
 </head>
 <body>
@@ -694,7 +651,9 @@
       <div class="spinner-container" id="spinnerContainer">
         <div class="wheel-wrapper">
           <div class="wheel-pointer"></div>
-          <div class="wheel" id="wheel"></div>
+          <div class="wheel" id="wheel">
+            <div class="wheel-bg" id="wheelBg"></div>
+          </div>
           <div class="wheel-center" id="wheelCenter">
             <img src="Assets/afc-logo.png" alt="Conference" id="conferenceIcon">
           </div>
@@ -732,11 +691,13 @@
         <button class="replay-btn" onclick="skipToResults()">⏭️ Skip to Results</button>
       </div>
       
-      <!-- Replay uses same spinner container -->
+      <!-- Replay Spinner -->
       <div class="spinner-container" id="replaySpinnerContainer" style="display: none;">
         <div class="wheel-wrapper">
           <div class="wheel-pointer"></div>
-          <div class="wheel" id="replayWheel"></div>
+          <div class="wheel" id="replayWheel">
+            <div class="wheel-bg" id="replayWheelBg"></div>
+          </div>
           <div class="wheel-center">
             <img src="Assets/afc-logo.png" alt="Conference" id="replayConferenceIcon">
           </div>
@@ -748,7 +709,7 @@
         <div class="result-team" id="replayResultTeam"></div>
       </div>
 
-      <!-- Same Draft Board -->
+      <!-- Replay Draft Board -->
       <div class="draft-board">
         <h2>📋 Draft Results</h2>
         <div class="draft-grid" id="replayDraftGrid"></div>
@@ -761,14 +722,11 @@
     // CONFIGURATION
     // ============================================
     const CONFIG = {
-      // JSONBin for storing draft results and replay data
       JSONBIN_BIN_ID: '695b078fd0ea881f4054b2a0',
       JSONBIN_API_KEY: '$2a$10$C7BY0Kl0u74gNn/kXO7xNuayWv493/f1jAxlHUmx3ENADQKDii61C',
       
-      // Draft order (based on league standings)
       DRAFT_ORDER: ['joe', 'jarv', 'matt', 'mark', 'gaz', 'liam', 'ben'],
       
-      // Players data
       PLAYERS: {
         joe:  { name: 'Joe',  avatar: 'Assets/joe.png' },
         jarv: { name: 'Jarv', avatar: 'Assets/jarv.png' },
@@ -779,10 +737,15 @@
         ben:  { name: 'Ben',  avatar: 'Assets/ben.png' }
       },
       
-      // Playoff teams - will be fetched from ESPN (or fallback to 2025-26 season teams)
       AFC_TEAMS: [],
       NFC_TEAMS: []
     };
+
+    // Wheel colors
+    const WHEEL_COLORS = [
+      '#c41e3a', '#1e56a0', '#2d6a4f', '#9b2226', 
+      '#3d5a80', '#4a7c59', '#ae2012'
+    ];
 
     // ============================================
     // FETCH PLAYOFF TEAMS FROM ESPN
@@ -790,23 +753,18 @@
     async function fetchPlayoffTeams() {
       try {
         const response = await fetch('https://site.api.espn.com/apis/v2/sports/football/nfl/standings?season=2025&type=3');
-        
         if (!response.ok) throw new Error('ESPN fetch failed');
         
         const data = await response.json();
-        
         const afcTeams = [];
         const nfcTeams = [];
         
         data.children?.forEach(conference => {
-          const confName = conference.name;
-          const isAFC = confName.includes('American');
-          
+          const isAFC = conference.name.includes('American');
           conference.children?.forEach(division => {
             division.standings?.entries?.forEach(entry => {
               const team = entry.team;
-              const stats = entry.stats || [];
-              const playoffSeed = stats.find(s => s.name === 'playoffSeed')?.value;
+              const playoffSeed = entry.stats?.find(s => s.name === 'playoffSeed')?.value;
               
               if (playoffSeed && playoffSeed <= 7) {
                 const teamData = {
@@ -815,12 +773,7 @@
                   logo: team.logos?.[0]?.href || `https://a.espncdn.com/i/teamlogos/nfl/500/${team.abbreviation.toLowerCase()}.png`,
                   seed: playoffSeed
                 };
-                
-                if (isAFC) {
-                  afcTeams.push(teamData);
-                } else {
-                  nfcTeams.push(teamData);
-                }
+                (isAFC ? afcTeams : nfcTeams).push(teamData);
               }
             });
           });
@@ -834,13 +787,11 @@
         
         console.log('✅ Loaded playoff teams from ESPN:', CONFIG.AFC_TEAMS.length, 'AFC,', CONFIG.NFC_TEAMS.length, 'NFC');
         
-        // If ESPN returned no teams, use fallback
         if (CONFIG.AFC_TEAMS.length === 0 || CONFIG.NFC_TEAMS.length === 0) {
           throw new Error('No playoff teams found in ESPN data');
         }
-        
       } catch (err) {
-        console.error('Error fetching playoff teams, using fallback:', err);
+        console.log('Using fallback teams:', err.message);
         
         // 2025-26 NFL Season Playoff Teams (Super Bowl LX)
         CONFIG.AFC_TEAMS = [
@@ -869,25 +820,17 @@
     // STATE
     // ============================================
     let state = {
-      mode: 'live', // 'live' or 'replay'
+      mode: 'live',
       draftStarted: false,
       draftComplete: false,
       currentPlayerIndex: 0,
-      currentConference: 'afc', // 'afc' or 'nfc'
-      availableAFC: [...CONFIG.AFC_TEAMS],
-      availableNFC: [...CONFIG.NFC_TEAMS],
-      picks: {}, // { playerId: { afcTeam: '', nfcTeam: '' } }
-      replayData: [], // Array of { playerId, conference, team, spinDegrees, timestamp }
+      currentConference: 'afc',
+      availableAFC: [],
+      availableNFC: [],
+      picks: {},
+      replayData: [],
       isSpinning: false
     };
-
-    // ============================================
-    // WHEEL COLORS
-    // ============================================
-    const WHEEL_COLORS = [
-      '#c41e3a', '#1e56a0', '#2d6a4f', '#9b2226', 
-      '#3d5a80', '#4a7c59', '#ae2012', '#264653'
-    ];
 
     // ============================================
     // INITIALIZATION
@@ -895,20 +838,21 @@
     async function init() {
       showLoading(true);
       
-      // Fetch playoff teams from ESPN first
       await fetchPlayoffTeams();
       
-      // Initialize picks for all players
+      // Initialize state
+      state.availableAFC = [...CONFIG.AFC_TEAMS];
+      state.availableNFC = [...CONFIG.NFC_TEAMS];
+      
       CONFIG.DRAFT_ORDER.forEach(playerId => {
         state.picks[playerId] = { afcTeam: null, nfcTeam: null };
       });
       
-      // Try to load existing draft data
       await loadDraftData();
       
       renderDraftBoard();
       updateDraftStatus();
-      renderWheel();
+      renderWheel('wheel', 'wheelBg');
       
       showLoading(false);
     }
@@ -927,25 +871,21 @@
           const record = data.record;
           
           if (record && record.picks) {
-  // Merge loaded picks with initialized picks (don't overwrite completely)
-  CONFIG.DRAFT_ORDER.forEach(playerId => {
-    if (record.picks[playerId]) {
-      state.picks[playerId] = record.picks[playerId];
-    }
-  });
+            CONFIG.DRAFT_ORDER.forEach(playerId => {
+              if (record.picks[playerId]) {
+                state.picks[playerId] = record.picks[playerId];
+              }
+            });
             state.replayData = record.replayData || [];
             state.draftStarted = record.draftStarted || false;
             state.draftComplete = record.draftComplete || false;
             
-            // Reconstruct available teams
             reconstructAvailableTeams();
-            
-            // Find current position
             findCurrentPosition();
           }
         }
       } catch (err) {
-        console.log('No existing draft data or error loading:', err);
+        console.log('No existing draft data:', err);
       }
     }
 
@@ -966,7 +906,7 @@
           })
         });
       } catch (err) {
-        console.error('Error saving draft data:', err);
+        console.error('Error saving:', err);
       }
     }
 
@@ -994,54 +934,73 @@
           state.currentConference = 'afc';
           return;
         }
-        
         if (!pick.nfcTeam) {
           state.currentPlayerIndex = i;
           state.currentConference = 'nfc';
           return;
         }
       }
-      
-      // All picks complete
       state.draftComplete = true;
     }
 
     // ============================================
-    // RENDERING
+    // WHEEL RENDERING - Using Conic Gradient
     // ============================================
-    function renderWheel() {
-      const wheel = document.getElementById('wheel');
+    function renderWheel(wheelId, bgId) {
+      const wheel = document.getElementById(wheelId);
+      const wheelBg = document.getElementById(bgId);
       const teams = state.currentConference === 'afc' ? state.availableAFC : state.availableNFC;
       
       if (teams.length === 0) return;
       
       const segmentAngle = 360 / teams.length;
-      wheel.innerHTML = '';
       
-      teams.forEach((team, index) => {
-        const segment = document.createElement('div');
-        segment.className = 'wheel-segment';
-        const rotation = segmentAngle * index - 90 - (segmentAngle / 2);
-        segment.style.transform = `rotate(${rotation}deg) skewY(${90 - segmentAngle}deg)`;
-        segment.style.background = WHEEL_COLORS[index % WHEEL_COLORS.length];
+      // Build conic-gradient for wheel background
+      let gradient = 'conic-gradient(from -90deg, ';
+      teams.forEach((team, i) => {
+        const startAngle = i * segmentAngle;
+        const endAngle = (i + 1) * segmentAngle;
+        gradient += `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${startAngle}deg ${endAngle}deg`;
+        if (i < teams.length - 1) gradient += ', ';
+      });
+      gradient += ')';
+      
+      wheelBg.style.background = gradient;
+      
+      // Remove old labels
+      wheel.querySelectorAll('.wheel-label').forEach(el => el.remove());
+      
+      // Add team labels
+      const radius = wheel.offsetWidth / 2 - 55; // Distance from center
+      
+      teams.forEach((team, i) => {
+        const angle = (i * segmentAngle) + (segmentAngle / 2) - 90; // Center of segment
+        const angleRad = (angle * Math.PI) / 180;
         
-        const content = document.createElement('div');
-        content.className = 'segment-content';
-        content.style.transform = `skewY(${-(90 - segmentAngle)}deg) rotate(${segmentAngle / 2}deg) translateY(-30%)`;
-        content.innerHTML = `
+        const x = Math.cos(angleRad) * radius;
+        const y = Math.sin(angleRad) * radius;
+        
+        const label = document.createElement('div');
+        label.className = 'wheel-label';
+        label.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${angle + 90}deg)`;
+        label.innerHTML = `
           <img src="${team.logo}" alt="${team.short}" onerror="this.style.display='none'">
           <span>${team.short}</span>
         `;
         
-        segment.appendChild(content);
-        wheel.appendChild(segment);
+        wheel.appendChild(label);
       });
       
       // Update center icon
-      const conferenceIcon = document.getElementById('conferenceIcon');
-      conferenceIcon.src = state.currentConference === 'afc' ? 'Assets/afc-logo.png' : 'Assets/nfc-logo.png';
+      const iconId = wheelId === 'wheel' ? 'conferenceIcon' : 'replayConferenceIcon';
+      document.getElementById(iconId).src = state.currentConference === 'afc' 
+        ? 'Assets/afc-logo.png' 
+        : 'Assets/nfc-logo.png';
     }
 
+    // ============================================
+    // DRAFT BOARD RENDERING
+    // ============================================
     function renderDraftBoard() {
       const grid = document.getElementById('draftGrid');
       grid.innerHTML = '';
@@ -1097,8 +1056,9 @@
       
       const currentPlayer = CONFIG.PLAYERS[CONFIG.DRAFT_ORDER[state.currentPlayerIndex]];
       const conference = state.currentConference.toUpperCase();
+      const pickNum = getPickNumber();
       
-      statusText.textContent = `Pick ${getPickNumber()} of 14`;
+      statusText.textContent = `Pick ${pickNum} of 14`;
       pickDetails.innerHTML = `
         <div class="player-badge">
           <img src="${currentPlayer.avatar}" alt="${currentPlayer.name}">
@@ -1127,14 +1087,12 @@
 
     function getTeamLogo(teamName, conference) {
       const teams = conference === 'afc' ? CONFIG.AFC_TEAMS : CONFIG.NFC_TEAMS;
-      const team = teams.find(t => t.name === teamName);
-      return team ? team.logo : '';
+      return teams.find(t => t.name === teamName)?.logo || '';
     }
 
     function getTeamShort(teamName, conference) {
       const teams = conference === 'afc' ? CONFIG.AFC_TEAMS : CONFIG.NFC_TEAMS;
-      const team = teams.find(t => t.name === teamName);
-      return team ? team.short : teamName;
+      return teams.find(t => t.name === teamName)?.short || teamName;
     }
 
     // ============================================
@@ -1146,7 +1104,7 @@
       if (!state.draftStarted) {
         state.draftStarted = true;
         updateDraftStatus();
-        renderWheel();
+        renderWheel('wheel', 'wheelBg');
         saveDraftData();
         return;
       }
@@ -1163,14 +1121,14 @@
       const winnerIndex = Math.floor(Math.random() * teams.length);
       const winner = teams[winnerIndex];
       
-      // Calculate spin (multiple rotations + land on winner)
-      const baseRotations = 5 + Math.floor(Math.random() * 3); // 5-7 full rotations
-      const winnerAngle = (winnerIndex * segmentAngle) + (segmentAngle / 2);
-      const totalDegrees = (baseRotations * 360) + (360 - winnerAngle);
+      // Calculate spin - pointer is at top (0deg), wheel rotates clockwise
+      // We need the winning segment's center to end up at the top
+      const baseRotations = 5 + Math.floor(Math.random() * 3);
+      const winnerCenterAngle = (winnerIndex * segmentAngle) + (segmentAngle / 2);
+      const totalDegrees = (baseRotations * 360) + (360 - winnerCenterAngle);
       
       // Apply spin
       const wheel = document.getElementById('wheel');
-      wheel.style.transition = 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
       wheel.style.transform = `rotate(${totalDegrees}deg)`;
       
       // Record for replay
@@ -1191,22 +1149,18 @@
         spinBtn.classList.remove('spinning');
         state.isSpinning = false;
         
-        // Move to next pick
         advanceToNextPick();
-        
-        // Save state
         saveDraftData();
-        
-        // Update UI
         renderDraftBoard();
         updateDraftStatus();
         
-        // Reset wheel for next spin
+        // Reset wheel
         setTimeout(() => {
           wheel.style.transition = 'none';
           wheel.style.transform = 'rotate(0deg)';
           setTimeout(() => {
-            renderWheel();
+            wheel.style.transition = 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+            renderWheel('wheel', 'wheelBg');
           }, 50);
         }, 1000);
         
@@ -1227,11 +1181,7 @@
       `;
       
       resultDisplay.classList.add('show');
-      
-      // Hide after 3 seconds
-      setTimeout(() => {
-        resultDisplay.classList.remove('show');
-      }, 3000);
+      setTimeout(() => resultDisplay.classList.remove('show'), 3000);
     }
 
     function recordPick(winner) {
@@ -1248,10 +1198,8 @@
 
     function advanceToNextPick() {
       if (state.currentConference === 'afc') {
-        // Move to NFC for same player
         state.currentConference = 'nfc';
       } else {
-        // Move to next player's AFC
         state.currentConference = 'afc';
         state.currentPlayerIndex++;
         
@@ -1287,11 +1235,9 @@
       
       CONFIG.DRAFT_ORDER.forEach((playerId) => {
         const player = CONFIG.PLAYERS[playerId];
-        const pick = state.picks[playerId];
-        const isComplete = pick.afcTeam && pick.nfcTeam;
         
         const card = document.createElement('div');
-        card.className = `draft-card ${isComplete ? 'completed' : ''}`;
+        card.className = 'draft-card';
         card.id = `replay-card-${playerId}`;
         
         card.innerHTML = `
@@ -1315,21 +1261,31 @@
         return;
       }
       
-      // Reset replay board
       renderReplayDraftBoard();
       
       document.getElementById('startReplayBtn').disabled = true;
       document.getElementById('replaySpinnerContainer').style.display = 'flex';
       
-      // Play each spin
+      // Reset available teams for replay
+      let replayAvailableAFC = [...CONFIG.AFC_TEAMS];
+      let replayAvailableNFC = [...CONFIG.NFC_TEAMS];
+      
       for (let i = 0; i < state.replayData.length; i++) {
         const spinData = state.replayData[i];
-        await playReplaySpin(spinData, i);
         
-        // Update draft board
+        // Update available teams for this spin
+        const teams = spinData.conference === 'afc' ? replayAvailableAFC : replayAvailableNFC;
+        
+        await playReplaySpin(spinData, teams);
         updateReplayCard(spinData);
         
-        // Wait between spins
+        // Remove picked team
+        if (spinData.conference === 'afc') {
+          replayAvailableAFC = replayAvailableAFC.filter(t => t.name !== spinData.team);
+        } else {
+          replayAvailableNFC = replayAvailableNFC.filter(t => t.name !== spinData.team);
+        }
+        
         if (i < state.replayData.length - 1) {
           await sleep(2000);
         }
@@ -1339,64 +1295,45 @@
       document.getElementById('replaySpinnerContainer').style.display = 'none';
     }
 
-    function playReplaySpin(spinData, index) {
+    function playReplaySpin(spinData, availableTeams) {
       return new Promise(resolve => {
         const wheel = document.getElementById('replayWheel');
+        const wheelBg = document.getElementById('replayWheelBg');
         const conferenceIcon = document.getElementById('replayConferenceIcon');
         
-        // Set up wheel for this spin
-        const teams = spinData.conference === 'afc' ? CONFIG.AFC_TEAMS : CONFIG.NFC_TEAMS;
+        // Temporarily set state for rendering
+        const originalConf = state.currentConference;
+        const originalAFC = state.availableAFC;
+        const originalNFC = state.availableNFC;
         
-        // Filter out already picked teams for this replay position
-        const pickedTeams = state.replayData.slice(0, index)
-          .filter(s => s.conference === spinData.conference)
-          .map(s => s.team);
+        state.currentConference = spinData.conference;
+        if (spinData.conference === 'afc') {
+          state.availableAFC = availableTeams;
+        } else {
+          state.availableNFC = availableTeams;
+        }
         
-        const availableTeams = teams.filter(t => !pickedTeams.includes(t.name));
+        renderWheel('replayWheel', 'replayWheelBg');
         
-        renderReplayWheel(availableTeams, spinData.conference);
+        // Restore state
+        state.currentConference = originalConf;
+        state.availableAFC = originalAFC;
+        state.availableNFC = originalNFC;
+        
         conferenceIcon.src = spinData.conference === 'afc' ? 'Assets/afc-logo.png' : 'Assets/nfc-logo.png';
         
-        // Reset wheel position
         wheel.style.transition = 'none';
         wheel.style.transform = 'rotate(0deg)';
         
         setTimeout(() => {
-          // Spin!
           wheel.style.transition = 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
           wheel.style.transform = `rotate(${spinData.spinDegrees}deg)`;
           
-          // Show result after spin
           setTimeout(() => {
             showReplayResult(spinData);
             resolve();
           }, 5500);
         }, 100);
-      });
-    }
-
-    function renderReplayWheel(teams, conference) {
-      const wheel = document.getElementById('replayWheel');
-      const segmentAngle = 360 / teams.length;
-      wheel.innerHTML = '';
-      
-      teams.forEach((team, index) => {
-        const segment = document.createElement('div');
-        segment.className = 'wheel-segment';
-        const rotation = segmentAngle * index - 90 - (segmentAngle / 2);
-        segment.style.transform = `rotate(${rotation}deg) skewY(${90 - segmentAngle}deg)`;
-        segment.style.background = WHEEL_COLORS[index % WHEEL_COLORS.length];
-        
-        const content = document.createElement('div');
-        content.className = 'segment-content';
-        content.style.transform = `skewY(${-(90 - segmentAngle)}deg) rotate(${segmentAngle / 2}deg) translateY(-30%)`;
-        content.innerHTML = `
-          <img src="${team.logo}" alt="${team.short}" onerror="this.style.display='none'">
-          <span>${team.short}</span>
-        `;
-        
-        segment.appendChild(content);
-        wheel.appendChild(segment);
       });
     }
 
@@ -1416,10 +1353,7 @@
       `;
       
       resultDisplay.classList.add('show');
-      
-      setTimeout(() => {
-        resultDisplay.classList.remove('show');
-      }, 2000);
+      setTimeout(() => resultDisplay.classList.remove('show'), 2000);
     }
 
     function updateReplayCard(spinData) {
@@ -1432,7 +1366,6 @@
     }
 
     function skipToResults() {
-      // Just show final results without animation
       CONFIG.DRAFT_ORDER.forEach(playerId => {
         const pick = state.picks[playerId];
         
@@ -1470,9 +1403,7 @@
         text += `  NFC: ${pick.nfcTeam || 'TBD'}\n\n`;
       });
       
-      navigator.clipboard.writeText(text).then(() => {
-        alert('Results copied to clipboard!');
-      });
+      navigator.clipboard.writeText(text).then(() => alert('Results copied to clipboard!'));
     }
 
     function exportToPicksJson() {
@@ -1486,9 +1417,8 @@
         };
       });
       
-      const jsonText = JSON.stringify(picksJson, null, 2);
-      navigator.clipboard.writeText(jsonText).then(() => {
-        alert('picks.json content copied to clipboard!\n\nPaste this into your picks.json file.');
+      navigator.clipboard.writeText(JSON.stringify(picksJson, null, 2)).then(() => {
+        alert('picks.json content copied to clipboard!');
       });
     }
 
