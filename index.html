@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎰 Super Bowl LIX Draft Spinner</title>
+  
+  <!-- PWA Support -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SB Draft">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap');
+    
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-lighter: #1a1a24;
+      --gold: #d4af37;
+      --gold-light: #f4d03f;
+      --gold-dark: #b8960b;
+      --red: #c41e3a;
+      --red-dark: #8b0000;
+      --green: #2ecc71;
+      --blue: #3498db;
+      --text: #ffffff;
+      --text-muted: #8a8a9a;
+      --border: #2a2a3a;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Roboto Condensed', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(180deg, rgba(196,30,58,0.3) 0%, transparent 100%);
+    }
+    
+    .header h1 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+    
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* Mode Selector */
+    .mode-selector {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .mode-btn {
+      padding: 12px 24px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-card);
+      color: var(--text);
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .mode-btn:hover {
+      border-color: var(--gold);
+    }
+    
+    .mode-btn.active {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--bg-dark);
+      border-color: var(--gold);
+    }
+    
+    /* Draft Status */
+    .draft-status {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    .current-pick {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.5rem;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    
+    .pick-details {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .player-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-lighter);
+      padding: 8px 16px;
+      border-radius: 20px;
+    }
+    
+    .player-badge img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    
+    .player-badge span {
+      font-weight: 600;
+    }
+    
+    .conference-badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-family: 'Oswald', sans-serif;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .conference-badge.afc {
+      background: linear-gradient(135deg, #c41e3a, #8b0000);
+      color: white;
+    }
+    
+    .conference-badge.nfc {
+      background: linear-gradient(135deg, #1e56a0, #163d6b);
+      color: white;
+    }
+    
+    /* Spinner Container */
+    .spinner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .wheel-wrapper {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      margin-bottom: 20px;
+    }
+    
+    @media (min-width: 640px) {
+      .wheel-wrapper {
+        width: 400px;
+        height: 400px;
+      }
+    }
+    
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      position: relative;
+      transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+      box-shadow: 
+        0 0 0 8px var(--gold),
+        0 0 0 12px var(--bg-dark),
+        0 0 40px rgba(212, 175, 55, 0.3);
+    }
+    
+    .wheel.spinning {
+      transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    }
+    
+    .wheel-segment {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      left: 50%;
+      top: 50%;
+      transform-origin: 0% 0%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      clip-path: polygon(0 0, 100% 0, 100% 100%);
+      overflow: hidden;
+    }
+    
+    .segment-content {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(25.7deg) translateY(-30%);
+      text-align: center;
+    }
+    
+    .segment-content img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      margin-bottom: 4px;
+    }
+    
+    @media (min-width: 640px) {
+      .segment-content img {
+        width: 50px;
+        height: 50px;
+      }
+    }
+    
+    .segment-content span {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+      max-width: 60px;
+      line-height: 1.1;
+    }
+    
+    @media (min-width: 640px) {
+      .segment-content span {
+        font-size: 0.75rem;
+        max-width: 70px;
+      }
+    }
+    
+    /* Pointer */
+    .wheel-pointer {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-top: 40px solid var(--gold);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+      z-index: 10;
+    }
+    
+    .wheel-pointer::after {
+      content: '';
+      position: absolute;
+      top: -38px;
+      left: -15px;
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 30px solid var(--gold-light);
+    }
+    
+    /* Center circle */
+    .wheel-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--bg-card), var(--bg-dark));
+      border: 4px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    
+    .wheel-center img {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+    }
+    
+    /* Spin Button */
+    .spin-btn {
+      padding: 16px 48px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--bg-dark);
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+    }
+    
+    .spin-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(212, 175, 55, 0.5);
+    }
+    
+    .spin-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .spin-btn.spinning {
+      animation: pulse 0.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    
+    /* Result Display */
+    .result-display {
+      display: none;
+      text-align: center;
+      padding: 24px;
+      background: var(--bg-card);
+      border: 2px solid var(--gold);
+      border-radius: 16px;
+      margin-bottom: 24px;
+      animation: resultPop 0.5s ease;
+    }
+    
+    .result-display.show {
+      display: block;
+    }
+    
+    @keyframes resultPop {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .result-display h3 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.5rem;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    
+    .result-team {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    
+    .result-team img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+    }
+    
+    .result-team span {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    
+    /* Draft Board */
+    .draft-board {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    
+    .draft-board h2 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.3rem;
+      color: var(--gold);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    
+    .draft-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    
+    @media (min-width: 640px) {
+      .draft-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    .draft-card {
+      background: var(--bg-lighter);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .draft-card.current {
+      border-color: var(--gold);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+    }
+    
+    .draft-card.completed {
+      opacity: 0.7;
+    }
+    
+    .draft-card-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border);
+    }
+    
+    .draft-card.current .draft-card-avatar {
+      border-color: var(--gold);
+    }
+    
+    .draft-card-info {
+      flex: 1;
+    }
+    
+    .draft-card-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    
+    .draft-card-picks {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    
+    .draft-pick {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--bg-dark);
+    }
+    
+    .draft-pick img {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+    }
+    
+    .draft-pick.afc {
+      border: 1px solid #c41e3a;
+    }
+    
+    .draft-pick.nfc {
+      border: 1px solid #1e56a0;
+    }
+    
+    .draft-pick.pending {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    
+    /* Replay Controls */
+    .replay-controls {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    .replay-controls.show {
+      display: block;
+    }
+    
+    .replay-controls h3 {
+      font-family: 'Oswald', sans-serif;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    
+    .replay-btn {
+      padding: 12px 24px;
+      border: 2px solid var(--gold);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--gold);
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 4px;
+    }
+    
+    .replay-btn:hover {
+      background: var(--gold);
+      color: var(--bg-dark);
+    }
+    
+    /* Draft Complete */
+    .draft-complete {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.05));
+      border: 2px solid var(--gold);
+      border-radius: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .draft-complete.show {
+      display: block;
+    }
+    
+    .draft-complete h2 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 2rem;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+    
+    .draft-complete p {
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    
+    .export-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      background: var(--green);
+      color: white;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin: 4px;
+    }
+    
+    /* Loading Overlay */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    
+    .loading-overlay.show {
+      display: flex;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      margin-top: 16px;
+      color: var(--text-muted);
+    }
+    
+    /* No Draft Message */
+    .no-draft {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    
+    .no-draft h2 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    
+    .start-draft-btn {
+      padding: 16px 32px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--red), var(--red-dark));
+      color: white;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .start-draft-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(196, 30, 58, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p class="loading-text">Loading draft data...</p>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <h1>🎰 Super Bowl LIX Draft</h1>
+    <p>Spin to win your playoff teams!</p>
+  </header>
+
+  <main class="container">
+    <!-- Mode Selector -->
+    <div class="mode-selector">
+      <button class="mode-btn active" id="liveModeBtn" onclick="setMode('live')">🎯 Live Draft</button>
+      <button class="mode-btn" id="replayModeBtn" onclick="setMode('replay')">📹 Watch Replay</button>
+    </div>
+
+    <!-- Live Draft Section -->
+    <div id="liveDraftSection">
+      <!-- Draft Status -->
+      <div class="draft-status" id="draftStatus">
+        <div class="current-pick" id="currentPickText">Loading...</div>
+        <div class="pick-details" id="pickDetails"></div>
+      </div>
+
+      <!-- Spinner -->
+      <div class="spinner-container" id="spinnerContainer">
+        <div class="wheel-wrapper">
+          <div class="wheel-pointer"></div>
+          <div class="wheel" id="wheel"></div>
+          <div class="wheel-center" id="wheelCenter">
+            <img src="Assets/afc.png" alt="Conference" id="conferenceIcon">
+          </div>
+        </div>
+        <button class="spin-btn" id="spinBtn" onclick="spin()">🎰 SPIN!</button>
+      </div>
+
+      <!-- Result Display -->
+      <div class="result-display" id="resultDisplay">
+        <h3 id="resultTitle">Result!</h3>
+        <div class="result-team" id="resultTeam"></div>
+      </div>
+
+      <!-- Draft Complete -->
+      <div class="draft-complete" id="draftComplete">
+        <h2>🏆 Draft Complete!</h2>
+        <p>All teams have been assigned. Good luck in the playoffs!</p>
+        <button class="export-btn" onclick="exportResults()">📋 Copy Results</button>
+        <button class="export-btn" onclick="exportToPicksJson()">💾 Export picks.json</button>
+      </div>
+
+      <!-- Draft Board -->
+      <div class="draft-board">
+        <h2>📋 Draft Board</h2>
+        <div class="draft-grid" id="draftGrid"></div>
+      </div>
+    </div>
+
+    <!-- Replay Section -->
+    <div id="replaySection" style="display: none;">
+      <div class="replay-controls show">
+        <h3>📹 Draft Replay</h3>
+        <p style="color: var(--text-muted); margin-bottom: 16px;">Watch the complete draft unfold</p>
+        <button class="replay-btn" id="startReplayBtn" onclick="startReplay()">▶️ Play Full Replay</button>
+        <button class="replay-btn" onclick="skipToResults()">⏭️ Skip to Results</button>
+      </div>
+      
+      <!-- Replay uses same spinner container -->
+      <div class="spinner-container" id="replaySpinnerContainer" style="display: none;">
+        <div class="wheel-wrapper">
+          <div class="wheel-pointer"></div>
+          <div class="wheel" id="replayWheel"></div>
+          <div class="wheel-center">
+            <img src="Assets/afc.png" alt="Conference" id="replayConferenceIcon">
+          </div>
+        </div>
+      </div>
+
+      <div class="result-display" id="replayResultDisplay">
+        <h3 id="replayResultTitle">Result!</h3>
+        <div class="result-team" id="replayResultTeam"></div>
+      </div>
+
+      <!-- Same Draft Board -->
+      <div class="draft-board">
+        <h2>📋 Draft Results</h2>
+        <div class="draft-grid" id="replayDraftGrid"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    const CONFIG = {
+      // JSONBin for storing draft results and replay data
+      JSONBIN_BIN_ID: 'YOUR_DRAFT_BIN_ID', // Create a new bin for draft data
+      JSONBIN_API_KEY: '$2a$10$YOUR_API_KEY',
+      
+      // Draft order (based on league standings)
+      DRAFT_ORDER: ['joe', 'jarv', 'matt', 'mark', 'gaz', 'liam', 'ben'],
+      
+      // Players data
+      PLAYERS: {
+        joe:  { name: 'Joe',  avatar: 'Assets/joe.png' },
+        jarv: { name: 'Jarv', avatar: 'Assets/jarv.png' },
+        matt: { name: 'Matt', avatar: 'Assets/matt.png' },
+        mark: { name: 'Mark', avatar: 'Assets/mark.png' },
+        gaz:  { name: 'Gaz',  avatar: 'Assets/gaz.png' },
+        liam: { name: 'Liam', avatar: 'Assets/liam.png' },
+        ben:  { name: 'Ben',  avatar: 'Assets/ben.png' }
+      },
+      
+      // Playoff teams
+      AFC_TEAMS: [
+        { name: 'Kansas City Chiefs', short: 'Chiefs', logo: 'Assets/teams/kansas-city-chiefs.png' },
+        { name: 'Buffalo Bills', short: 'Bills', logo: 'Assets/teams/buffalo-bills.png' },
+        { name: 'Baltimore Ravens', short: 'Ravens', logo: 'Assets/teams/baltimore-ravens.png' },
+        { name: 'Houston Texans', short: 'Texans', logo: 'Assets/teams/houston-texans.png' },
+        { name: 'Los Angeles Chargers', short: 'Chargers', logo: 'Assets/teams/los-angeles-chargers.png' },
+        { name: 'Pittsburgh Steelers', short: 'Steelers', logo: 'Assets/teams/pittsburgh-steelers.png' },
+        { name: 'Denver Broncos', short: 'Broncos', logo: 'Assets/teams/denver-broncos.png' }
+      ],
+      
+      NFC_TEAMS: [
+        { name: 'Detroit Lions', short: 'Lions', logo: 'Assets/teams/detroit-lions.png' },
+        { name: 'Philadelphia Eagles', short: 'Eagles', logo: 'Assets/teams/philadelphia-eagles.png' },
+        { name: 'Tampa Bay Buccaneers', short: 'Buccaneers', logo: 'Assets/teams/tampa-bay-buccaneers.png' },
+        { name: 'Los Angeles Rams', short: 'Rams', logo: 'Assets/teams/los-angeles-rams.png' },
+        { name: 'Minnesota Vikings', short: 'Vikings', logo: 'Assets/teams/minnesota-vikings.png' },
+        { name: 'Washington Commanders', short: 'Commanders', logo: 'Assets/teams/washington-commanders.png' },
+        { name: 'Green Bay Packers', short: 'Packers', logo: 'Assets/teams/green-bay-packers.png' }
+      ]
+    };
+
+    // ============================================
+    // STATE
+    // ============================================
+    let state = {
+      mode: 'live', // 'live' or 'replay'
+      draftStarted: false,
+      draftComplete: false,
+      currentPlayerIndex: 0,
+      currentConference: 'afc', // 'afc' or 'nfc'
+      availableAFC: [...CONFIG.AFC_TEAMS],
+      availableNFC: [...CONFIG.NFC_TEAMS],
+      picks: {}, // { playerId: { afcTeam: '', nfcTeam: '' } }
+      replayData: [], // Array of { playerId, conference, team, spinDegrees, timestamp }
+      isSpinning: false
+    };
+
+    // ============================================
+    // WHEEL COLORS
+    // ============================================
+    const WHEEL_COLORS = [
+      '#c41e3a', '#1e56a0', '#2d6a4f', '#9b2226', 
+      '#3d5a80', '#4a7c59', '#ae2012', '#264653'
+    ];
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    async function init() {
+      showLoading(true);
+      
+      // Initialize picks for all players
+      CONFIG.DRAFT_ORDER.forEach(playerId => {
+        state.picks[playerId] = { afcTeam: null, nfcTeam: null };
+      });
+      
+      // Try to load existing draft data
+      await loadDraftData();
+      
+      renderDraftBoard();
+      updateDraftStatus();
+      renderWheel();
+      
+      showLoading(false);
+    }
+
+    // ============================================
+    // DATA PERSISTENCE
+    // ============================================
+    async function loadDraftData() {
+      try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.JSONBIN_BIN_ID}/latest`, {
+          headers: { 'X-Access-Key': CONFIG.JSONBIN_API_KEY }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const record = data.record;
+          
+          if (record && record.picks) {
+            state.picks = record.picks;
+            state.replayData = record.replayData || [];
+            state.draftStarted = record.draftStarted || false;
+            state.draftComplete = record.draftComplete || false;
+            
+            // Reconstruct available teams
+            reconstructAvailableTeams();
+            
+            // Find current position
+            findCurrentPosition();
+          }
+        }
+      } catch (err) {
+        console.log('No existing draft data or error loading:', err);
+      }
+    }
+
+    async function saveDraftData() {
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Access-Key': CONFIG.JSONBIN_API_KEY
+          },
+          body: JSON.stringify({
+            picks: state.picks,
+            replayData: state.replayData,
+            draftStarted: state.draftStarted,
+            draftComplete: state.draftComplete,
+            lastUpdated: new Date().toISOString()
+          })
+        });
+      } catch (err) {
+        console.error('Error saving draft data:', err);
+      }
+    }
+
+    function reconstructAvailableTeams() {
+      state.availableAFC = [...CONFIG.AFC_TEAMS];
+      state.availableNFC = [...CONFIG.NFC_TEAMS];
+      
+      Object.values(state.picks).forEach(pick => {
+        if (pick.afcTeam) {
+          state.availableAFC = state.availableAFC.filter(t => t.name !== pick.afcTeam);
+        }
+        if (pick.nfcTeam) {
+          state.availableNFC = state.availableNFC.filter(t => t.name !== pick.nfcTeam);
+        }
+      });
+    }
+
+    function findCurrentPosition() {
+      for (let i = 0; i < CONFIG.DRAFT_ORDER.length; i++) {
+        const playerId = CONFIG.DRAFT_ORDER[i];
+        const pick = state.picks[playerId];
+        
+        if (!pick.afcTeam) {
+          state.currentPlayerIndex = i;
+          state.currentConference = 'afc';
+          return;
+        }
+        
+        if (!pick.nfcTeam) {
+          state.currentPlayerIndex = i;
+          state.currentConference = 'nfc';
+          return;
+        }
+      }
+      
+      // All picks complete
+      state.draftComplete = true;
+    }
+
+    // ============================================
+    // RENDERING
+    // ============================================
+    function renderWheel() {
+      const wheel = document.getElementById('wheel');
+      const teams = state.currentConference === 'afc' ? state.availableAFC : state.availableNFC;
+      
+      if (teams.length === 0) return;
+      
+      const segmentAngle = 360 / teams.length;
+      wheel.innerHTML = '';
+      
+      teams.forEach((team, index) => {
+        const segment = document.createElement('div');
+        segment.className = 'wheel-segment';
+        const rotation = segmentAngle * index - 90 - (segmentAngle / 2);
+        segment.style.transform = `rotate(${rotation}deg) skewY(${90 - segmentAngle}deg)`;
+        segment.style.background = WHEEL_COLORS[index % WHEEL_COLORS.length];
+        
+        const content = document.createElement('div');
+        content.className = 'segment-content';
+        content.style.transform = `skewY(${-(90 - segmentAngle)}deg) rotate(${segmentAngle / 2}deg) translateY(-30%)`;
+        content.innerHTML = `
+          <img src="${team.logo}" alt="${team.short}" onerror="this.style.display='none'">
+          <span>${team.short}</span>
+        `;
+        
+        segment.appendChild(content);
+        wheel.appendChild(segment);
+      });
+      
+      // Update center icon
+      const conferenceIcon = document.getElementById('conferenceIcon');
+      conferenceIcon.src = state.currentConference === 'afc' ? 'Assets/afc.png' : 'Assets/nfc.png';
+    }
+
+    function renderDraftBoard() {
+      const grid = document.getElementById('draftGrid');
+      grid.innerHTML = '';
+      
+      CONFIG.DRAFT_ORDER.forEach((playerId, index) => {
+        const player = CONFIG.PLAYERS[playerId];
+        const pick = state.picks[playerId];
+        const isCurrent = index === state.currentPlayerIndex && !state.draftComplete;
+        const isComplete = pick.afcTeam && pick.nfcTeam;
+        
+        const card = document.createElement('div');
+        card.className = `draft-card ${isCurrent ? 'current' : ''} ${isComplete ? 'completed' : ''}`;
+        
+        card.innerHTML = `
+          <img src="${player.avatar}" alt="${player.name}" class="draft-card-avatar">
+          <div class="draft-card-info">
+            <div class="draft-card-name">${player.name}</div>
+            <div class="draft-card-picks">
+              <div class="draft-pick afc ${!pick.afcTeam ? 'pending' : ''}">
+                ${pick.afcTeam ? `<img src="${getTeamLogo(pick.afcTeam, 'afc')}" alt="">${getTeamShort(pick.afcTeam, 'afc')}` : 'AFC: TBD'}
+              </div>
+              <div class="draft-pick nfc ${!pick.nfcTeam ? 'pending' : ''}">
+                ${pick.nfcTeam ? `<img src="${getTeamLogo(pick.nfcTeam, 'nfc')}" alt="">${getTeamShort(pick.nfcTeam, 'nfc')}` : 'NFC: TBD'}
+              </div>
+            </div>
+          </div>
+        `;
+        
+        grid.appendChild(card);
+      });
+    }
+
+    function updateDraftStatus() {
+      const statusText = document.getElementById('currentPickText');
+      const pickDetails = document.getElementById('pickDetails');
+      const spinBtn = document.getElementById('spinBtn');
+      
+      if (state.draftComplete) {
+        statusText.textContent = '🏆 Draft Complete!';
+        pickDetails.innerHTML = '';
+        spinBtn.style.display = 'none';
+        document.getElementById('draftComplete').classList.add('show');
+        document.getElementById('spinnerContainer').style.display = 'none';
+        return;
+      }
+      
+      if (!state.draftStarted) {
+        statusText.textContent = 'Ready to Start Draft';
+        pickDetails.innerHTML = '<p style="color: var(--text-muted);">Click the button below to begin!</p>';
+        spinBtn.textContent = '🚀 START DRAFT';
+        return;
+      }
+      
+      const currentPlayer = CONFIG.PLAYERS[CONFIG.DRAFT_ORDER[state.currentPlayerIndex]];
+      const conference = state.currentConference.toUpperCase();
+      
+      statusText.textContent = `Pick ${getPickNumber()} of 14`;
+      pickDetails.innerHTML = `
+        <div class="player-badge">
+          <img src="${currentPlayer.avatar}" alt="${currentPlayer.name}">
+          <span>${currentPlayer.name}</span>
+        </div>
+        <div class="conference-badge ${state.currentConference}">${conference} Pick</div>
+      `;
+      
+      spinBtn.textContent = '🎰 SPIN!';
+    }
+
+    function getPickNumber() {
+      let pickNum = 0;
+      for (let i = 0; i < CONFIG.DRAFT_ORDER.length; i++) {
+        const playerId = CONFIG.DRAFT_ORDER[i];
+        if (state.picks[playerId].afcTeam) pickNum++;
+        if (state.picks[playerId].nfcTeam) pickNum++;
+        if (i === state.currentPlayerIndex) {
+          if (state.currentConference === 'afc') break;
+          pickNum++;
+          break;
+        }
+      }
+      return pickNum + 1;
+    }
+
+    function getTeamLogo(teamName, conference) {
+      const teams = conference === 'afc' ? CONFIG.AFC_TEAMS : CONFIG.NFC_TEAMS;
+      const team = teams.find(t => t.name === teamName);
+      return team ? team.logo : '';
+    }
+
+    function getTeamShort(teamName, conference) {
+      const teams = conference === 'afc' ? CONFIG.AFC_TEAMS : CONFIG.NFC_TEAMS;
+      const team = teams.find(t => t.name === teamName);
+      return team ? team.short : teamName;
+    }
+
+    // ============================================
+    // SPIN LOGIC
+    // ============================================
+    function spin() {
+      if (state.isSpinning) return;
+      
+      if (!state.draftStarted) {
+        state.draftStarted = true;
+        updateDraftStatus();
+        renderWheel();
+        saveDraftData();
+        return;
+      }
+      
+      state.isSpinning = true;
+      const spinBtn = document.getElementById('spinBtn');
+      spinBtn.disabled = true;
+      spinBtn.classList.add('spinning');
+      
+      const teams = state.currentConference === 'afc' ? state.availableAFC : state.availableNFC;
+      const segmentAngle = 360 / teams.length;
+      
+      // Random winner
+      const winnerIndex = Math.floor(Math.random() * teams.length);
+      const winner = teams[winnerIndex];
+      
+      // Calculate spin (multiple rotations + land on winner)
+      const baseRotations = 5 + Math.floor(Math.random() * 3); // 5-7 full rotations
+      const winnerAngle = (winnerIndex * segmentAngle) + (segmentAngle / 2);
+      const totalDegrees = (baseRotations * 360) + (360 - winnerAngle);
+      
+      // Apply spin
+      const wheel = document.getElementById('wheel');
+      wheel.style.transition = 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+      wheel.style.transform = `rotate(${totalDegrees}deg)`;
+      
+      // Record for replay
+      state.replayData.push({
+        playerId: CONFIG.DRAFT_ORDER[state.currentPlayerIndex],
+        conference: state.currentConference,
+        team: winner.name,
+        spinDegrees: totalDegrees,
+        timestamp: Date.now()
+      });
+      
+      // After spin completes
+      setTimeout(() => {
+        showResult(winner);
+        recordPick(winner);
+        
+        spinBtn.disabled = false;
+        spinBtn.classList.remove('spinning');
+        state.isSpinning = false;
+        
+        // Move to next pick
+        advanceToNextPick();
+        
+        // Save state
+        saveDraftData();
+        
+        // Update UI
+        renderDraftBoard();
+        updateDraftStatus();
+        
+        // Reset wheel for next spin
+        setTimeout(() => {
+          wheel.style.transition = 'none';
+          wheel.style.transform = 'rotate(0deg)';
+          setTimeout(() => {
+            renderWheel();
+          }, 50);
+        }, 1000);
+        
+      }, 5500);
+    }
+
+    function showResult(winner) {
+      const resultDisplay = document.getElementById('resultDisplay');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultTeam = document.getElementById('resultTeam');
+      
+      const currentPlayer = CONFIG.PLAYERS[CONFIG.DRAFT_ORDER[state.currentPlayerIndex]];
+      
+      resultTitle.textContent = `${currentPlayer.name} gets...`;
+      resultTeam.innerHTML = `
+        <img src="${winner.logo}" alt="${winner.name}" onerror="this.style.display='none'">
+        <span>${winner.name}</span>
+      `;
+      
+      resultDisplay.classList.add('show');
+      
+      // Hide after 3 seconds
+      setTimeout(() => {
+        resultDisplay.classList.remove('show');
+      }, 3000);
+    }
+
+    function recordPick(winner) {
+      const playerId = CONFIG.DRAFT_ORDER[state.currentPlayerIndex];
+      
+      if (state.currentConference === 'afc') {
+        state.picks[playerId].afcTeam = winner.name;
+        state.availableAFC = state.availableAFC.filter(t => t.name !== winner.name);
+      } else {
+        state.picks[playerId].nfcTeam = winner.name;
+        state.availableNFC = state.availableNFC.filter(t => t.name !== winner.name);
+      }
+    }
+
+    function advanceToNextPick() {
+      if (state.currentConference === 'afc') {
+        // Move to NFC for same player
+        state.currentConference = 'nfc';
+      } else {
+        // Move to next player's AFC
+        state.currentConference = 'afc';
+        state.currentPlayerIndex++;
+        
+        if (state.currentPlayerIndex >= CONFIG.DRAFT_ORDER.length) {
+          state.draftComplete = true;
+        }
+      }
+    }
+
+    // ============================================
+    // MODE SWITCHING
+    // ============================================
+    function setMode(mode) {
+      state.mode = mode;
+      
+      document.getElementById('liveModeBtn').classList.toggle('active', mode === 'live');
+      document.getElementById('replayModeBtn').classList.toggle('active', mode === 'replay');
+      
+      document.getElementById('liveDraftSection').style.display = mode === 'live' ? 'block' : 'none';
+      document.getElementById('replaySection').style.display = mode === 'replay' ? 'block' : 'none';
+      
+      if (mode === 'replay') {
+        renderReplayDraftBoard();
+      }
+    }
+
+    // ============================================
+    // REPLAY FUNCTIONS
+    // ============================================
+    function renderReplayDraftBoard() {
+      const grid = document.getElementById('replayDraftGrid');
+      grid.innerHTML = '';
+      
+      CONFIG.DRAFT_ORDER.forEach((playerId) => {
+        const player = CONFIG.PLAYERS[playerId];
+        const pick = state.picks[playerId];
+        const isComplete = pick.afcTeam && pick.nfcTeam;
+        
+        const card = document.createElement('div');
+        card.className = `draft-card ${isComplete ? 'completed' : ''}`;
+        card.id = `replay-card-${playerId}`;
+        
+        card.innerHTML = `
+          <img src="${player.avatar}" alt="${player.name}" class="draft-card-avatar">
+          <div class="draft-card-info">
+            <div class="draft-card-name">${player.name}</div>
+            <div class="draft-card-picks">
+              <div class="draft-pick afc pending" id="replay-afc-${playerId}">AFC: TBD</div>
+              <div class="draft-pick nfc pending" id="replay-nfc-${playerId}">NFC: TBD</div>
+            </div>
+          </div>
+        `;
+        
+        grid.appendChild(card);
+      });
+    }
+
+    async function startReplay() {
+      if (state.replayData.length === 0) {
+        alert('No replay data available!');
+        return;
+      }
+      
+      // Reset replay board
+      renderReplayDraftBoard();
+      
+      document.getElementById('startReplayBtn').disabled = true;
+      document.getElementById('replaySpinnerContainer').style.display = 'flex';
+      
+      // Play each spin
+      for (let i = 0; i < state.replayData.length; i++) {
+        const spinData = state.replayData[i];
+        await playReplaySpin(spinData, i);
+        
+        // Update draft board
+        updateReplayCard(spinData);
+        
+        // Wait between spins
+        if (i < state.replayData.length - 1) {
+          await sleep(2000);
+        }
+      }
+      
+      document.getElementById('startReplayBtn').disabled = false;
+      document.getElementById('replaySpinnerContainer').style.display = 'none';
+    }
+
+    function playReplaySpin(spinData, index) {
+      return new Promise(resolve => {
+        const wheel = document.getElementById('replayWheel');
+        const conferenceIcon = document.getElementById('replayConferenceIcon');
+        
+        // Set up wheel for this spin
+        const teams = spinData.conference === 'afc' ? CONFIG.AFC_TEAMS : CONFIG.NFC_TEAMS;
+        
+        // Filter out already picked teams for this replay position
+        const pickedTeams = state.replayData.slice(0, index)
+          .filter(s => s.conference === spinData.conference)
+          .map(s => s.team);
+        
+        const availableTeams = teams.filter(t => !pickedTeams.includes(t.name));
+        
+        renderReplayWheel(availableTeams, spinData.conference);
+        conferenceIcon.src = spinData.conference === 'afc' ? 'Assets/afc.png' : 'Assets/nfc.png';
+        
+        // Reset wheel position
+        wheel.style.transition = 'none';
+        wheel.style.transform = 'rotate(0deg)';
+        
+        setTimeout(() => {
+          // Spin!
+          wheel.style.transition = 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+          wheel.style.transform = `rotate(${spinData.spinDegrees}deg)`;
+          
+          // Show result after spin
+          setTimeout(() => {
+            showReplayResult(spinData);
+            resolve();
+          }, 5500);
+        }, 100);
+      });
+    }
+
+    function renderReplayWheel(teams, conference) {
+      const wheel = document.getElementById('replayWheel');
+      const segmentAngle = 360 / teams.length;
+      wheel.innerHTML = '';
+      
+      teams.forEach((team, index) => {
+        const segment = document.createElement('div');
+        segment.className = 'wheel-segment';
+        const rotation = segmentAngle * index - 90 - (segmentAngle / 2);
+        segment.style.transform = `rotate(${rotation}deg) skewY(${90 - segmentAngle}deg)`;
+        segment.style.background = WHEEL_COLORS[index % WHEEL_COLORS.length];
+        
+        const content = document.createElement('div');
+        content.className = 'segment-content';
+        content.style.transform = `skewY(${-(90 - segmentAngle)}deg) rotate(${segmentAngle / 2}deg) translateY(-30%)`;
+        content.innerHTML = `
+          <img src="${team.logo}" alt="${team.short}" onerror="this.style.display='none'">
+          <span>${team.short}</span>
+        `;
+        
+        segment.appendChild(content);
+        wheel.appendChild(segment);
+      });
+    }
+
+    function showReplayResult(spinData) {
+      const resultDisplay = document.getElementById('replayResultDisplay');
+      const resultTitle = document.getElementById('replayResultTitle');
+      const resultTeam = document.getElementById('replayResultTeam');
+      
+      const player = CONFIG.PLAYERS[spinData.playerId];
+      const teams = spinData.conference === 'afc' ? CONFIG.AFC_TEAMS : CONFIG.NFC_TEAMS;
+      const team = teams.find(t => t.name === spinData.team);
+      
+      resultTitle.textContent = `${player.name} gets...`;
+      resultTeam.innerHTML = `
+        <img src="${team.logo}" alt="${team.name}" onerror="this.style.display='none'">
+        <span>${team.name}</span>
+      `;
+      
+      resultDisplay.classList.add('show');
+      
+      setTimeout(() => {
+        resultDisplay.classList.remove('show');
+      }, 2000);
+    }
+
+    function updateReplayCard(spinData) {
+      const pickElement = document.getElementById(`replay-${spinData.conference}-${spinData.playerId}`);
+      const teams = spinData.conference === 'afc' ? CONFIG.AFC_TEAMS : CONFIG.NFC_TEAMS;
+      const team = teams.find(t => t.name === spinData.team);
+      
+      pickElement.classList.remove('pending');
+      pickElement.innerHTML = `<img src="${team.logo}" alt="">${team.short}`;
+    }
+
+    function skipToResults() {
+      // Just show final results without animation
+      CONFIG.DRAFT_ORDER.forEach(playerId => {
+        const pick = state.picks[playerId];
+        
+        if (pick.afcTeam) {
+          const afcEl = document.getElementById(`replay-afc-${playerId}`);
+          const afcTeam = CONFIG.AFC_TEAMS.find(t => t.name === pick.afcTeam);
+          if (afcEl && afcTeam) {
+            afcEl.classList.remove('pending');
+            afcEl.innerHTML = `<img src="${afcTeam.logo}" alt="">${afcTeam.short}`;
+          }
+        }
+        
+        if (pick.nfcTeam) {
+          const nfcEl = document.getElementById(`replay-nfc-${playerId}`);
+          const nfcTeam = CONFIG.NFC_TEAMS.find(t => t.name === pick.nfcTeam);
+          if (nfcEl && nfcTeam) {
+            nfcEl.classList.remove('pending');
+            nfcEl.innerHTML = `<img src="${nfcTeam.logo}" alt="">${nfcTeam.short}`;
+          }
+        }
+      });
+    }
+
+    // ============================================
+    // EXPORT FUNCTIONS
+    // ============================================
+    function exportResults() {
+      let text = '🏈 SUPER BOWL LIX DRAFT RESULTS 🏈\n\n';
+      
+      CONFIG.DRAFT_ORDER.forEach(playerId => {
+        const player = CONFIG.PLAYERS[playerId];
+        const pick = state.picks[playerId];
+        text += `${player.name}:\n`;
+        text += `  AFC: ${pick.afcTeam || 'TBD'}\n`;
+        text += `  NFC: ${pick.nfcTeam || 'TBD'}\n\n`;
+      });
+      
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Results copied to clipboard!');
+      });
+    }
+
+    function exportToPicksJson() {
+      const picksJson = {};
+      
+      CONFIG.DRAFT_ORDER.forEach(playerId => {
+        const pick = state.picks[playerId];
+        picksJson[playerId] = {
+          afcTeam: pick.afcTeam || 'TBC',
+          nfcTeam: pick.nfcTeam || 'TBC'
+        };
+      });
+      
+      const jsonText = JSON.stringify(picksJson, null, 2);
+      navigator.clipboard.writeText(jsonText).then(() => {
+        alert('picks.json content copied to clipboard!\n\nPaste this into your picks.json file.');
+      });
+    }
+
+    // ============================================
+    // UTILITIES
+    // ============================================
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').classList.toggle('show', show);
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // ============================================
+    // INIT
+    // ============================================
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+  
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('✅ Service Worker registered'))
+        .catch(err => console.log('Service Worker error:', err));
+    }
+  </script>
+</body>
+</html>
