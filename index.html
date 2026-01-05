@@ -417,6 +417,22 @@
     
     .export-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(46,204,113,0.4); }
     
+    .reset-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin: 4px;
+    }
+    
+    .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(231,76,60,0.4); }
+    
     .loading-overlay {
       display: none;
       position: fixed;
@@ -654,6 +670,7 @@
         <p>All teams have been assigned. Good luck in the playoffs!</p>
         <button class="export-btn" onclick="exportResults()">📋 Copy Results</button>
         <button class="export-btn" onclick="exportToPicksJson()">💾 Export picks.json</button>
+        <button class="reset-btn" onclick="resetDraft()">🔄 Reset Draft</button>
       </div>
     </div>
 
@@ -662,6 +679,7 @@
         <h2>📋 Draft Results</h2>
         <p>Here's how the draft played out!</p>
         <button class="export-btn" onclick="exportResults()">📋 Copy Results</button>
+        <button class="reset-btn" onclick="resetDraft()">🔄 Reset Draft</button>
       </div>
     </div>
 
@@ -730,8 +748,6 @@
       oscillator.frequency.value = 800 + Math.random() * 400;
       oscillator.type = 'square';
       
-      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gainNode.gain.exponentialDecayTo = 0.01;
       gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
       
@@ -817,7 +833,10 @@
       if (enteredPin === player.pin) {
         state.isUnlocked = true;
         hidePinOverlay();
-        actuallySpinReel(state.pendingSpinConf);
+        // Small delay to ensure overlay is hidden before spinning
+        setTimeout(() => {
+          actuallySpinReel(state.pendingSpinConf);
+        }, 100);
       } else {
         document.getElementById('pinInput').classList.add('error');
         document.getElementById('pinError').textContent = '❌ Incorrect PIN. Try again!';
@@ -861,22 +880,22 @@
       } catch (err) {
         console.log('Using fallback teams:', err.message);
         CONFIG.AFC_TEAMS = [
-          { name: 'Denver Broncos', short: 'Broncos', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/den.png', seed: 1 },
-          { name: 'New England Patriots', short: 'Patriots', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/ne.png', seed: 2 },
-          { name: 'Jacksonville Jaguars', short: 'Jaguars', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/jax.png', seed: 3 },
-          { name: 'Pittsburgh Steelers', short: 'Steelers', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/pit.png', seed: 4 },
-          { name: 'Houston Texans', short: 'Texans', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/hou.png', seed: 5 },
-          { name: 'Buffalo Bills', short: 'Bills', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/buf.png', seed: 6 },
-          { name: 'Los Angeles Chargers', short: 'Chargers', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/lac.png', seed: 7 }
+          { name: 'Kansas City Chiefs', short: 'Chiefs', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/kc.png', seed: 1 },
+          { name: 'Buffalo Bills', short: 'Bills', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/buf.png', seed: 2 },
+          { name: 'Baltimore Ravens', short: 'Ravens', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/bal.png', seed: 3 },
+          { name: 'Houston Texans', short: 'Texans', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/hou.png', seed: 4 },
+          { name: 'Los Angeles Chargers', short: 'Chargers', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/lac.png', seed: 5 },
+          { name: 'Pittsburgh Steelers', short: 'Steelers', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/pit.png', seed: 6 },
+          { name: 'Denver Broncos', short: 'Broncos', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/den.png', seed: 7 }
         ];
         CONFIG.NFC_TEAMS = [
-          { name: 'Seattle Seahawks', short: 'Seahawks', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/sea.png', seed: 1 },
-          { name: 'Chicago Bears', short: 'Bears', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/chi.png', seed: 2 },
-          { name: 'Philadelphia Eagles', short: 'Eagles', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/phi.png', seed: 3 },
-          { name: 'Carolina Panthers', short: 'Panthers', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/car.png', seed: 4 },
-          { name: 'Los Angeles Rams', short: 'Rams', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/lar.png', seed: 5 },
-          { name: 'San Francisco 49ers', short: '49ers', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/sf.png', seed: 6 },
-          { name: 'Green Bay Packers', short: 'Packers', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/gb.png', seed: 7 }
+          { name: 'Detroit Lions', short: 'Lions', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/det.png', seed: 1 },
+          { name: 'Philadelphia Eagles', short: 'Eagles', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/phi.png', seed: 2 },
+          { name: 'Los Angeles Rams', short: 'Rams', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/lar.png', seed: 3 },
+          { name: 'Tampa Bay Buccaneers', short: 'Buccaneers', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/tb.png', seed: 4 },
+          { name: 'Minnesota Vikings', short: 'Vikings', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/min.png', seed: 5 },
+          { name: 'Green Bay Packers', short: 'Packers', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/gb.png', seed: 6 },
+          { name: 'Washington Commanders', short: 'Commanders', logo: 'https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png', seed: 7 }
         ];
       }
     }
@@ -892,6 +911,14 @@
       renderDraftBoard();
       updateUI();
       showLoading(false);
+      
+      // Set up PIN input Enter key listener AFTER DOM is ready
+      const pinInput = document.getElementById('pinInput');
+      if (pinInput) {
+        pinInput.addEventListener('keyup', function(e) {
+          if (e.key === 'Enter') submitPin();
+        });
+      }
     }
 
     async function loadDraftData() {
@@ -926,7 +953,74 @@
             lastUpdated: new Date().toISOString()
           })
         });
+        console.log('✅ Draft data saved to JSONBin');
       } catch (err) { console.error('Error saving:', err); }
+    }
+
+    async function resetDraft() {
+      if (!confirm('⚠️ Are you sure you want to reset the entire draft? This cannot be undone!')) return;
+      
+      showLoading(true);
+      
+      // Reset local state
+      state.currentPlayerIndex = 0;
+      state.availableAFC = [...CONFIG.AFC_TEAMS];
+      state.availableNFC = [...CONFIG.NFC_TEAMS];
+      state.currentPicks = { afc: null, nfc: null };
+      state.isSpinning = false;
+      state.draftComplete = false;
+      state.replayData = [];
+      state.isUnlocked = false;
+      
+      CONFIG.DRAFT_ORDER.forEach(id => {
+        state.picks[id] = { afcTeam: null, nfcTeam: null };
+      });
+      
+      // Save reset state to JSONBin
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${CONFIG.JSONBIN_BIN_ID}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Access-Key': CONFIG.JSONBIN_API_KEY },
+          body: JSON.stringify({
+            picks: state.picks,
+            replayData: [],
+            draftStarted: false,
+            draftComplete: false,
+            lastUpdated: new Date().toISOString()
+          })
+        });
+        console.log('✅ Draft reset complete');
+      } catch (err) {
+        console.error('Error resetting:', err);
+        alert('Error resetting draft. Please try again.');
+      }
+      
+      // Reset UI
+      document.getElementById('draftComplete').classList.remove('show');
+      document.getElementById('currentPlayer').style.display = 'block';
+      document.getElementById('slotMachine').style.display = 'block';
+      
+      const afcBtn = document.getElementById('afcSpinBtn');
+      const nfcBtn = document.getElementById('nfcSpinBtn');
+      const nextBtn = document.getElementById('nextPlayerBtn');
+      
+      afcBtn.disabled = false;
+      afcBtn.classList.remove('picked');
+      afcBtn.textContent = '🎰 Spin AFC';
+      
+      nfcBtn.disabled = false;
+      nfcBtn.classList.remove('picked');
+      nfcBtn.textContent = '🎰 Spin NFC';
+      
+      nextBtn.classList.remove('show');
+      
+      renderReels();
+      renderDraftBoard();
+      updateUI();
+      setMode('live');
+      
+      showLoading(false);
+      alert('✅ Draft has been reset! Ready to start fresh.');
     }
 
     function reconstructAvailableTeams() {
@@ -983,6 +1077,11 @@
     }
     
     function actuallySpinReel(conf) {
+      if (!conf) {
+        console.error('No conference specified for spin');
+        return;
+      }
+      
       initAudio();
       playLeverSound();
       
@@ -992,6 +1091,18 @@
       const wrapper = document.getElementById(`${conf}ReelWrapper`);
       const btn = document.getElementById(`${conf}SpinBtn`);
       const teams = conf === 'afc' ? state.availableAFC : state.availableNFC;
+      
+      if (!reel || !wrapper || !btn) {
+        console.error('Could not find reel elements for:', conf);
+        state.isSpinning = false;
+        return;
+      }
+      
+      if (teams.length === 0) {
+        console.error('No teams available for:', conf);
+        state.isSpinning = false;
+        return;
+      }
       
       btn.disabled = true;
       document.getElementById('afcSpinBtn').disabled = true;
@@ -1187,9 +1298,6 @@
     function showLoading(show) { document.getElementById('loadingOverlay').classList.toggle('show', show); }
 
     document.addEventListener('DOMContentLoaded', init);
-    document.getElementById('pinInput').addEventListener('keyup', function(e) {
-      if (e.key === 'Enter') submitPin();
-    });
   </script>
   
   <script>
