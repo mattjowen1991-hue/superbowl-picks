@@ -979,7 +979,7 @@
         // Segment i spans from (i * segmentAngle) to ((i+1) * segmentAngle)
         // Center of segment i is at (i * segmentAngle) + (segmentAngle / 2)
         // But since gradient starts at top (-90deg), we subtract 90 for positioning
-        const segmentCenterDeg = (i * segmentAngle) + (segmentAngle / 2) - 90 + (segmentAngle / 2);
+        const segmentCenterDeg = (i * segmentAngle) - 90;
         const angleRad = (segmentCenterDeg * Math.PI) / 180;
         
         const x = Math.cos(angleRad) * radius;
@@ -989,8 +989,9 @@
         label.className = 'wheel-label';
         label.style.left = `calc(50% + ${x}px)`;
         label.style.top = `calc(50% + ${y}px)`;
-        // Center the label without rotation for now
-        label.style.transform = 'translate(-50%, -50%)';
+        // Rotate around the label's center to face outward
+        const rotation = (i * segmentAngle) + (segmentAngle / 2);
+        label.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
         label.innerHTML = `
           <img src="${team.logo}" alt="${team.short}" onerror="this.style.display='none'">
           <span>${team.short}</span>
