@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sb-draft-v4';
+const CACHE_NAME = 'sb-draft-v5';
 const STATIC_ASSETS = [
   './',
   './index.html',
