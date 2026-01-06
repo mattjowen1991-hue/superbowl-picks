@@ -899,20 +899,18 @@
         
         data.children?.forEach(conference => {
           const isAFC = conference.name.includes('American');
-          conference.children?.forEach(division => {
-            division.standings?.entries?.forEach(entry => {
-              const team = entry.team;
-              const playoffSeed = entry.stats?.find(s => s.name === 'playoffSeed')?.value;
-              if (playoffSeed && playoffSeed <= 7) {
-                const teamData = {
-                  name: team.displayName,
-                  short: team.shortDisplayName || team.abbreviation,
-                  logo: team.logos?.[0]?.href || `https://a.espncdn.com/i/teamlogos/nfl/500/${team.abbreviation.toLowerCase()}.png`,
-                  seed: playoffSeed
-                };
-                (isAFC ? afcTeams : nfcTeams).push(teamData);
-              }
-            });
+          conference.standings?.entries?.forEach(entry => {
+            const team = entry.team;
+            const playoffSeed = entry.stats?.find(s => s.name === 'playoffSeed')?.value;
+            if (playoffSeed && playoffSeed <= 7) {
+              const teamData = {
+                name: team.displayName,
+                short: team.shortDisplayName || team.abbreviation,
+                logo: team.logos?.[0]?.href || `https://a.espncdn.com/i/teamlogos/nfl/500/${team.abbreviation.toLowerCase()}.png`,
+                seed: playoffSeed
+              };
+              (isAFC ? afcTeams : nfcTeams).push(teamData);
+            }
           });
         });
         
